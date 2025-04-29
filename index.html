@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WoT Статистика гравця</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>World of Tanks Статистика</h1>
+            <p>Аналіз останніх боїв гравця</p>
+        </div>
+        
+        <div class="alert alert-danger" id="error-message">
+            <span class="alert-close">&times;</span>
+            <div class="alert-icon"><span class="material-icons">error_outline</span></div>
+            <div class="alert-message">Помилка</div>
+        </div>
+        <div class="alert alert-success" id="success-message">
+            <span class="alert-close">&times;</span>
+            <div class="alert-icon"><span class="material-icons">check_circle_outline</span></div>
+            <div class="alert-message">Успішно</div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="card search-card">
+                <h2>Пошук гравця</h2>
+                <div class="form-group">
+                    <label for="player-nickname">Нікнейм гравця</label>
+                    <div class="input-with-button">
+                        <input type="text" id="player-nickname" placeholder="Введіть нікнейм гравця">
+                        <button id="search-player-btn" class="icon-button">
+                            <span class="material-icons">search</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="server">Сервер</label>
+                    <select id="server">
+                        <option value="EU" selected>Європа (EU)</option>
+                        <option value="NA">Північна Америка (NA)</option>
+                        <option value="ASIA">Азія (ASIA)</option>
+                    </select>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <h3>Налаштування запиту</h3>
+                <div class="form-group">
+                    <label for="battles-range">Кількість боїв</label>
+                    <div class="range-with-value">
+                        <input type="range" id="battles-range" min="10" max="500" step="10" value="100">
+                        <span id="battles-value">100</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="days-range">Кількість днів</label>
+                    <div class="range-with-value">
+                        <input type="range" id="days-range" min="1" max="14" step="1" value="3">
+                        <span id="days-value">3</span>
+                    </div>
+                </div>
+                
+                <div class="buttons-row">
+                    <button id="load-battles-btn" class="primary-button" disabled>
+                        <span class="material-icons">download</span>
+                        Завантажити бої
+                    </button>
+                </div>
+                
+                <div class="button-group">
+                    <button id="open-tomato-btn" class="secondary-button" disabled>
+                        <span class="material-icons">open_in_new</span>
+                        Tomato.GG
+                    </button>
+                    <button id="open-wot-btn" class="secondary-button" disabled>
+                        <span class="material-icons">open_in_new</span>
+                        WoT Профіль
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card settings-card">
+                <h3>Налаштування API</h3>
+                <div class="form-group">
+                    <label for="wot-api-key">WoT API Ключ</label>
+                    <div class="input-with-button">
+                        <input type="text" id="wot-api-key" value="f5f97f92233a59f3d8dbaec28d22ce0f">
+                        <button id="save-settings-btn" class="icon-button">
+                            <span class="material-icons">save</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="card player-card" id="player-info-card" style="display:none;">
+                <div id="player-info">
+                    <!-- Тут буде детальна інформація про гравця -->
+                </div>
+            </div>
+            
+            <div class="card" id="battles-list-card" style="display:none;">
+                <div class="card-header">
+                    <h2>Останні бої</h2>
+                    <div class="filter-container">
+                        <label for="tank-type-filter">Фільтр:</label>
+                        <select id="tank-type-filter">
+                            <option value="all">Всі типи</option>
+                            <option value="HT">Важкі танки (ВТ)</option>
+                            <option value="MT">Середні танки (СТ)</option>
+                            <option value="TD">ПТ-САУ</option>
+                            <option value="LT">Легкі танки (ЛТ)</option>
+                            <option value="SPG">САУ</option>
+                        </select>
+                        
+                        <div class="tier-filter">
+                            <label for="tier-filter">Рівень:</label>
+                            <select id="tier-filter">
+                                <option value="all">Всі</option>
+                                <option value="10">10</option>
+                                <option value="9">9</option>
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="battles-container">
+                    <div class="loader-container" id="loader-container">
+                        <div class="loader" id="battles-loader"></div>
+                        <div class="loading-text" id="battles-loading-text">Завантаження боїв...</div>
+                    </div>
+                    
+                    <div class="tanks-list" id="tanks-list" style="display:none;">
+                        <!-- Тут будуть картки танків -->
+                    </div>
+                </div>
+                
+                <div class="stats-summary" id="stats-summary" style="display:none;">
+                    <h3>Cтатистика</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><span class="material-icons">directions_car</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="total-battles">0</div>
+                                <div class="stat-label">Боїв</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon win-icon"><span class="material-icons">emoji_events</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="avg-winrate">0%</div>
+                                <div class="stat-label">% перемог</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon damage-icon"><span class="material-icons">flash_on</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="avg-damage">0</div>
+                                <div class="stat-label">Сер. дамаг</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon frag-icon"><span class="material-icons">whatshot</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="avg-frags">0</div>
+                                <div class="stat-label">Сер. фраги</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
